@@ -1,0 +1,16 @@
+services:
+  whatsapp-dedup:
+    build: .
+    container_name: whatsapp-dedup
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./data:/app/data
+    environment:
+      - DATA_DIR=/app/data
+      - TZ=Asia/Kolkata
+    # Required for Puppeteer
+    shm_size: '1gb'
+    security_opt:
+      - no-new-privileges:true

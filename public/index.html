@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WhatsApp Dedup Dashboard</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+
+<body>
+    <div class="app">
+        <aside class="sidebar">
+            <div class="logo">
+                <span class="logo-icon">💬</span>
+                <h1>WA Dedup</h1>
+            </div>
+
+            <div class="connection-status" id="connectionStatus">
+                <span class="status-dot"></span>
+                <span class="status-text">Connecting...</span>
+            </div>
+
+            <div class="stats-container" id="statsContainer">
+                <div class="stat-item">
+                    <span class="stat-value" id="statUnique">-</span>
+                    <span class="stat-label">Unique</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-value" id="statDuplicates">-</span>
+                    <span class="stat-label">Duplicates</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-value" id="statChats">-</span>
+                    <span class="stat-label">Chats</span>
+                </div>
+            </div>
+
+            <div class="filters">
+                <h3>Filters</h3>
+                <div class="filter-group">
+                    <label class="filter-checkbox">
+                        <input type="checkbox" id="filterLinks">
+                        <span class="checkmark"></span>
+                        <span class="filter-label">🔗 Contains Links</span>
+                    </label>
+                </div>
+                <div class="filter-group">
+                    <label class="filter-checkbox">
+                        <input type="checkbox" id="filterPrices">
+                        <span class="checkmark"></span>
+                        <span class="filter-label">💰 Contains Prices</span>
+                    </label>
+                </div>
+                <div class="filter-group">
+                    <label class="filter-checkbox">
+                        <input type="checkbox" id="filterMedia">
+                        <span class="checkmark"></span>
+                        <span class="filter-label">📷 Has Media</span>
+                    </label>
+                </div>
+                <div class="filter-group">
+                    <label for="filterChat">Chat</label>
+                    <select id="filterChat">
+                        <option value="">All Chats</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label for="filterSearch">Search</label>
+                    <input type="text" id="filterSearch" placeholder="Search messages...">
+                </div>
+                <div class="filter-group">
+                    <label for="filterDateFrom">From Date</label>
+                    <input type="date" id="filterDateFrom">
+                </div>
+                <div class="filter-group">
+                    <label for="filterDateTo">To Date</label>
+                    <input type="date" id="filterDateTo">
+                </div>
+                <button class="btn btn-primary" id="applyFilters">Apply Filters</button>
+                <button class="btn btn-secondary" id="clearFilters">Clear All</button>
+            </div>
+
+            <!-- Tools Section -->
+            <div class="tools-section">
+                <h3>Tools</h3>
+                <button class="btn btn-secondary" id="openImportBtn">📥 Import History</button>
+                <button class="btn btn-secondary" id="openBackupBtn">📁 Export Backup</button>
+                <button class="btn btn-secondary" id="openTelegramBtn">📲 Telegram Settings</button>
+            </div>
+        </aside>
+
+        <main class="main-content">
+            <div class="qr-modal" id="qrModal">
+                <div class="qr-modal-content">
+                    <h2>📱 Scan QR Code</h2>
+                    <p>WhatsApp → Settings → Linked Devices → Link a Device</p>
+                    <div class="qr-code" id="qrCode">
+                        <div class="qr-loading">Generating QR...</div>
+                    </div>
+                </div>
+            </div>
+
+            <header class="messages-header">
+                <h2>Messages</h2>
+                <button class="btn btn-icon" id="refreshBtn" title="Refresh">🔄</button>
+            </header>
+
+            <div class="messages-container" id="messagesContainer">
+                <div class="loading" id="loadingIndicator">
+                    <div class="spinner"></div>
+                    <span>Loading messages...</span>
+                </div>
+                <div class="messages-list" id="messagesList"></div>
+                <div class="load-more" id="loadMore">
+                    <button class="btn btn-secondary" id="loadMoreBtn">Load More</button>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Import Modal -->
+    <div class="import-modal hidden" id="importModal">
+        <div class="import-modal-content">
+            <h2>📥 Import Message History</h2>
+            <p>Select a chat and number of messages to import</p>
+
+            <div class="import-form">
+                <div class="filter-group">
+                    <label for="importChatSelect">Select Chat</label>
+                    <select id="importChatSelect">
+                        <option value="">Loading chats...</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label for="importLimit">Messages to Import</label>
+                    <select id="importLimit">
+                        <option value="50">Last 50 messages</option>
+                        <option value="100" selected>Last 100 messages</option>
+                        <option value="200">Last 200 messages</option>
+                        <option value="500">Last 500 messages</option>
+                    </select>
+                </div>
+                <div class="import-status hidden" id="importStatus">
+                    <div class="spinner"></div>
+                    <span id="importStatusText">Importing...</span>
+                </div>
+                <div class="import-result hidden" id="importResult"></div>
+                <div class="import-buttons">
+                    <button class="btn btn-primary" id="startImportBtn">Start Import</button>
+                    <button class="btn btn-secondary" id="closeImportBtn">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Backup Modal -->
+    <div class="modal hidden" id="backupModal">
+        <div class="modal-content">
+            <h2>📁 Export Backup</h2>
+            <p>Export all unique messages as HTML and JSON files</p>
+            <div class="backup-status" id="backupStatus">
+                <div class="progress-bar">
+                    <div class="progress-fill" id="backupProgress"></div>
+                </div>
+                <span id="backupStatusText">Ready to export</span>
+            </div>
+            <div class="backup-result hidden" id="backupResult"></div>
+            <div class="modal-buttons">
+                <button class="btn btn-primary" id="startBackupBtn">Start Export</button>
+                <button class="btn btn-secondary" id="closeBackupBtn">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Telegram Modal -->
+    <div class="modal hidden" id="telegramModal">
+        <div class="modal-content wide">
+            <h2>📲 Telegram Settings</h2>
+            <p>Forward unique messages from selected groups to Telegram</p>
+
+            <div class="form-section">
+                <h4>Bot Configuration</h4>
+                <div class="filter-group">
+                    <label>Bot Token (from @BotFather)</label>
+                    <input type="text" id="telegramBotToken" placeholder="123456789:ABCdefGHI...">
+                </div>
+                <div class="filter-group">
+                    <label>Chat/Channel ID</label>
+                    <input type="text" id="telegramChatId" placeholder="-1001234567890">
+                </div>
+                <div class="filter-group">
+                    <label class="filter-checkbox">
+                        <input type="checkbox" id="telegramEnabled">
+                        <span class="checkmark"></span>
+                        <span class="filter-label">Enable Telegram Forwarding</span>
+                    </label>
+                </div>
+                <button class="btn btn-secondary" id="testTelegramBtn">🔗 Test Connection</button>
+            </div>
+
+            <div class="form-section">
+                <h4>Watched Groups (Buy/Sell)</h4>
+                <p class="hint">Select groups whose messages should be forwarded to Telegram</p>
+                <div class="group-list" id="telegramGroupList">Loading groups...</div>
+            </div>
+
+            <div class="telegram-result hidden" id="telegramResult"></div>
+            <div class="modal-buttons">
+                <button class="btn btn-primary" id="saveTelegramBtn">Save Settings</button>
+                <button class="btn btn-secondary" id="closeTelegramBtn">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="media-modal hidden" id="mediaModal">
+        <div class="media-modal-content">
+            <button class="close-btn" id="closeMediaModal">&times;</button>
+            <div class="media-viewer" id="mediaViewer"></div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+
+</html>
