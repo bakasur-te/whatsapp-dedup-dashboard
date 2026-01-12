@@ -29,7 +29,7 @@ A lightweight, self-hosted solution to capture WhatsApp messages, automatically 
 
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/yourusername/whatsapp-dedup-dashboard.git
+   git clone https://github.com/bakasur-te/whatsapp-dedup-dashboard.git
    cd whatsapp-dedup-dashboard
    ```
 

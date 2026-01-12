@@ -14,7 +14,7 @@ Thank you for your interest in contributing!
 
 ```bash
 # Clone your fork
-git clone https://github.com/yourusername/whatsapp-dedup-dashboard.git
+git clone https://github.com/bakasur-te/whatsapp-dedup-dashboard.git
 cd whatsapp-dedup-dashboard
 
 # Install dependencies
